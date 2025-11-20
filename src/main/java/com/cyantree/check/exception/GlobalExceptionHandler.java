@@ -24,30 +24,30 @@ public class GlobalExceptionHandler implements ProblemHandling {
 
     @Override
     public ProblemBuilder prepare(Throwable throwable, StatusType status, URI type) {
-        if(throwable instanceof CustomException customException) {
+        if (throwable instanceof CustomException customException) {
             return Problem.builder()
-                .withTitle(customException.getErrorTitle())
-                .withStatus(status)
-                .withDetail(customException.getMessage())
-                .withType(type);
+                    .withTitle(customException.getErrorTitle())
+                    .withStatus(status)
+                    .withDetail(customException.getMessage())
+                    .withType(type);
         }
 
         return Problem.builder()
-            .withTitle(ErrorCode.INTERNAL_SERVER_ERROR.getMessage())
-            .withStatus(status)
-            .withDetail(throwable.getMessage())
-            .withType(type);
+                .withTitle(ErrorCode.INTERNAL_SERVER_ERROR.getMessage())
+                .withStatus(status)
+                .withDetail(throwable.getMessage())
+                .withType(type);
     }
 
     @Override
     public ResponseEntity<Problem> handleThrowable(Throwable throwable, NativeWebRequest request) {
         log.error("Unhandled exception occurred", throwable);
-        
-        if(throwable instanceof CustomException customException) {
+
+        if (throwable instanceof CustomException customException) {
             return createProblemResponse(request, customException);
         }
-        
-        CustomException exception = new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, throwable.getMessage());
+
+        CustomException exception = new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         return createProblemResponse(request, exception);
     }
 
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler implements ProblemHandling {
     public ResponseEntity<Problem> handleMediaTypeNotSupportedException(
             HttpMediaTypeNotSupportedException exception, NativeWebRequest request) {
         log.warn("Unsupported media type: {}", exception.getMessage());
-        CustomException customException = new CustomException(ErrorCode.UNSUPPORTED_MEDIA_TYPE, exception.getMessage());
+        CustomException customException = new CustomException(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
         return createProblemResponse(request, customException);
     }
 
@@ -93,13 +93,13 @@ public class GlobalExceptionHandler implements ProblemHandling {
     private ResponseEntity<Problem> createProblemResponse(NativeWebRequest request, CustomException customException) {
         HttpServletRequest servletRequest = (HttpServletRequest) request.getNativeRequest();
         String uri = servletRequest.getRequestURI();
-        
+
         Problem problem = Problem.builder()
                 .withTitle(customException.getErrorTitle())
                 .withDetail(customException.getMessage())
                 .withType(URI.create(uri))
                 .build();
-                
+
         return ResponseEntity.status(customException.getStatusCode()).body(problem);
     }
 }

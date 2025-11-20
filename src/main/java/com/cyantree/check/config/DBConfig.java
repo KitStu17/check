@@ -23,26 +23,29 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @EnableTransactionManagement
-@MapperScan(basePackages = {"com.cyantree.check.repository"})
+@MapperScan(basePackages = { "com.cyantree.check.web.repository", "com.cyantree.check.api.repository" })
 public class DBConfig {
 
-    @Value("${spring.datasource.url}")
+    @Value("${cyantree.datasource.url}")
     private String dataUrl;
 
-    @Value("${spring.datasource.username}")
+    @Value("${cyantree.datasource.username}")
     private String userName;
 
-    @Value("${spring.datasource.password}")
+    @Value("${cyantree.datasource.password}")
     private String password;
 
-    @Value("${spring.datasource.driver-class-name}")
+    @Value("${cyantree.datasource.driver-class-name}")
     private String driverClassName;
 
-    @Value("${spring.datasource.hikari.maximum-pool-size}")
+    @Value("${cyantree.datasource.hikari.maximum-pool-size}")
     private int maximumPoolSize;
 
-    @Value("${spring.datasource.hikari.connection-timeout}")
+    @Value("${cyantree.datasource.hikari.connection-timeout}")
     private int connectionTimeout;
+
+    @Value("${cyantree.mapper-locations}")
+    private String mapperLocations;
 
     // @Value를 사용하여 db연결 설정값 가져오기
     @Bean
@@ -63,8 +66,9 @@ public class DBConfig {
         sqlSessionFactoryBean.setDataSource(dataSource);
 
         // 기본적으로 *, ** 와 같은 와일드카드로 resource를 한번에 처리 불가
-        // 따라서 PathMatchingResourcePatternResolverd의 getResources()메소드로 조건에 일치하는 resource를 한번에 가져옴
-        Resource[] res = new PathMatchingResourcePatternResolver().getResources("classpath:sql/*.xml");
+        // 따라서 PathMatchingResourcePatternResolverd의 getResources()메소드로 조건에 일치하는
+        // resource를 한번에 가져옴
+        Resource[] res = new PathMatchingResourcePatternResolver().getResources(mapperLocations);
         sqlSessionFactoryBean.setMapperLocations(res);
         sqlSessionFactoryBean.setConfigLocation(new ClassPathResource("mybatis/mybatis-config.xml"));
 

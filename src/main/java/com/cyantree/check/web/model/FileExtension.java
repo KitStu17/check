@@ -13,9 +13,12 @@ public class FileExtension {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class FixFileVM {
+        @Schema(description = "일련 번호")
+        private long seqno;
+
         @Schema(description = "파일 확장자명")
         private String extensionName;
-        
+
         @Schema(description = "차단여부")
         private boolean isBlocked;
     }
@@ -25,9 +28,12 @@ public class FileExtension {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class CustomFileVM {
+        @Schema(description = "일련 번호")
+        private Long seqno;
+
         @Schema(description = "파일 확장자명")
         private String extensionName;
-        
+
         @Schema(description = "차단여부")
         private boolean isBlocked;
     }

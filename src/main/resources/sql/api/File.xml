@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cyantree.check.api.repository.FileApiRepository">
+
+    <!-- 고정 확장자 상태 업데이트 -->
+    <update id="updateFixedExtension" parameterType="com.cyantree.check.api.model.FileExtension$UpdateFixFileVM">
+    UPDATE file_extension SET
+        is_blocked = #{isBlocked},
+        update_dt = NOW()
+    WHERE seqno = #{seqno} AND extension_name = #{extensionName}
+    </update>
+
+    <!-- 커스텀 확장자 상태 업데이트 -->
+    <insert id="upsertCustomExtension" parameterType="com.cyantree.check.api.model.FileExtension$UpsertCustomFileVM">
+    INSERT INTO file_extension
+        (extension_name, is_fixed, is_blocked, update_dt)
+    VALUES
+        (#{extensionName}, FALSE, #{isBlocked}, NOW())
+    ON CONFLICT (extension_name)
+    DO UPDATE SET
+        is_blocked = excluded.is_blocked,
+        update_dt = excluded.update_dt
+    </insert>
+
+    <!--DB에서 삭제할 커스텀 확장자 조회 -->
+    <!-- 현재 등록 X, 마지막 변경 일자가 30일 이상 지난 데이터 조회 -->
+    <select id="selectRemoveTargetList" resultType="com.cyantree.check.api.model.FileExtension$RemoveCustomFileVM">
+    SELECT seqno, extension_name
+    FROM file_extension
+    WHERE is_fixed = FALSE AND is_blocked = FALSE
+        AND update_dt <![CDATA[<]]> NOW() - INTERVAL '30 DAYS'
+    </select>
+
+    <!-- DB에서 커스텀 확장자 삭제 -->
+    <delete id="removeCustomExtension" parameterType="com.cyantree.check.api.model.FileExtension$RemoveCustomFileVM">
+    DELETE FROM file_extension WHERE seqno = #{seqno} AND extension_name = #{extensionName}
+    </delete>
+</mapper>

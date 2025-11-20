@@ -3,13 +3,15 @@
     <springProperty name="PROFILE" source="spring.profiles.active" defaultValue="local"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-3level]) %boldRed(%logger{5}) - %msg %n" />
     <property name="BACKUP_LOG_FILE" value="server-%d{yyyyMMdd}.log"/>
-    <property name="LOG_FILE" value="server.log"/>
     <property name="FILE_PATH" value="log_data"/>
+    <property name="BACKUP_SCHEDULE_FILE" value="schduler-%d{yyyyMMdd}.log"/>
+    <property name="SCHEDULE_FILE" value="scheduler.log"/>
 
     <!-- Console appender 설정 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <Pattern>${LOG_PATTERN}</Pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
@@ -17,7 +19,7 @@
     <appender name="FILEOUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${FILE_PATH}/${LOG_FILE}</file>
 
-        <!-- 하루기준 백업 파일 생성 --> 
+        <!-- 하루기준 백업 파일 생성 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${FILE_PATH}/${BACKUP_LOG_FILE}</fileNamePattern>
 
@@ -28,8 +30,34 @@
 
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
+
+    <!-- Scheduler File appender 설정 -->
+    <appender name="SCHEDULE_FILEOUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${FILE_PATH}/${SCHEDULE_FILE}</file>
+
+        <!-- 하루기준 백업 파일 생성 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${FILE_PATH}/${BACKUP_SCHEDULE_FILE}</fileNamePattern>
+
+            <!-- 백업 파일 개수 제한 (최대 30일) -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- file_scheduler 토픽 전용 logger -->
+    <logger name="file_scheduler" level="INFO" additivity="false">
+        <appender-ref ref="SCHEDULE_FILEOUT"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
 
     <if condition='("${PROFILE}" == "local")'>
         <then>

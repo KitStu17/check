@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import com.cyantree.check.web.model.FileExtension.CustomFileVM;
 import com.cyantree.check.web.model.FileExtension.FixFileVM;
-
+import com.cyantree.check.web.repository.FileWebRepository;
 
 @Slf4j
 @Controller
@@ -22,23 +22,15 @@ import com.cyantree.check.web.model.FileExtension.FixFileVM;
 @RequestMapping("/web")
 public class MainController {
 
+    private final FileWebRepository fileWebRepository;
+
     @GetMapping("/main")
     public String mainPage(Model model) {
-        List<FixFileVM> fixedList = new ArrayList<>();
-        List<CustomFileVM> flexList = new ArrayList<>();
-        // 테스트 값 삽입
-        fixedList.add(new FixFileVM("bat", true));
-        fixedList.add(new FixFileVM("cmd", true));
-        fixedList.add(new FixFileVM("com", true));
-        fixedList.add(new FixFileVM("cpl", true));
-
-        flexList.add(new CustomFileVM("sh", true));
-        flexList.add(new CustomFileVM("ju", true));
-        flexList.add(new CustomFileVM("ch", true));
-        flexList.add(new CustomFileVM("test", true));
+        List<FixFileVM> fixedList = fileWebRepository.selectFixedExtensionList();
+        List<CustomFileVM> flexList = fileWebRepository.selectCustomExtensionList();
         model.addAttribute("fixed", fixedList);
         model.addAttribute("custom", flexList);
         return "main";
     }
-    
+
 }

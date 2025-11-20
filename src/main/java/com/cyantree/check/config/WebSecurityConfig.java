@@ -30,18 +30,11 @@ public class WebSecurityConfig {
         // 자기 자신에 대해 <frame>, <iframe>, <object>, <embed> 태그 사용 가능하도록 허용
         // HTML 내 인라인 스크립트 허용(테스트를 위해 허용, lucy 필터 사용 필요)
         // 추후 .properties 파일로 이동 필요
-        http.headers(headers -> headers.contentSecurityPolicy(customizer -> 
-            customizer.policyDirectives("default-src 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';")
-        ));
+        http.headers(headers -> headers.contentSecurityPolicy(customizer -> customizer.policyDirectives(
+                "default-src 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';")));
         // 세션 사용 X
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.authorizeHttpRequests(auth -> {
-            try {
-                auth.requestMatchers("/**").permitAll();
-            } catch (Exception e) {
-                log.error("Init Error : ", e);
-            }
-        });
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/**").permitAll());
 
         return http.build();
     }

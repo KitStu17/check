@@ -1,160 +1,252 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>파일 확장자 차단</title>
-        <link rel="stylesheet" th:href="@{/css/style.css}">
-    </head>
-    <body>
-        <div class="container">
-            <h1>◎ 파일 확장자 차단 테스트 페이지</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>파일 확장자 차단</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>◎ 파일 확장자 차단 테스트 페이지</h1>
 
-            <!-- 1. 고정 확장자 -->
-            <div class="section">
-                <div class="section-title">
-                    고정 확장자
-                </div>
-                <div class="fixed-extensions">
-                    <div class="checkbox-item" th:each="item : ${fixed}">
-                        <input type="checkbox" 
-                            th:id="${item.extensionName}" 
-                            name="fixedExtension" 
-                            th:value="${item.extensionName}"
-                            th:checked="${item.isBlocked}">
-                        <label th:for="${item.extensionName}" th:text="${item.extensionName}"></label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 2. 커스텀 확장자 입력 -->
-            <div class="section">
-                <div class="section-title">
-                    커스텀 확장자
-                </div>
-                <div class="custom-input-area">
-                    <input type="text" id="customExtensionInput" placeholder="확장자 입력" maxlength="20">
-                    <button class="add-button" onclick="addCustomExtension()">+추가</button>
-                </div>
-            </div>
-
-            <!-- 3. 커스텀 확장자 표시 -->
-            <div class="section">
-                <div class="section-title">
-                    <span id="extensionCount" th:text="${#lists.size(custom)} + '/200'">0/200</span>
-                </div>
-                <div class="custom-extensions-display">
-                    <div class="extension-tags" id="extensionTags">
-                        <div class="extension-tag" th:each="item : ${custom}">
-                            <span class="name" th:text="${item.extensionName}"></span>
-                            <span class="remove-btn" onclick="removeExtension(this)" th:data-name="${item.extensionName}">✕</span>
-                        </div>
-                        <div th:if="${#lists.isEmpty(custom)}" class="empty-message">
-                            등록된 커스텀 확장자가 없습니다.
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- 1. 고정 확장자 -->
+      <div class="section">
+        <div class="section-title">고정 확장자</div>
+        <div class="fixed-extensions">
+          <div class="checkbox-item" th:each="item : ${fixed}">
+            <input
+              type="checkbox"
+              th:id="${item.extensionName}"
+              name="fixedExtension"
+              th:value="${item.extensionName}"
+              th:data-seqno="${item.seqno}"
+              th:checked="${item.isBlocked}"
+            />
+            <label
+              th:for="${item.extensionName}"
+              th:text="${item.extensionName}"
+            ></label>
+          </div>
         </div>
+      </div>
 
-        <script>
-            // 페이지 로드 시 데이터 불러오기
-            window.addEventListener('DOMContentLoaded', function() {
-                loadFixedExtensions();
-                loadCustomExtensions();
+      <!-- 2. 커스텀 확장자 입력 -->
+      <div class="section">
+        <div class="section-title">커스텀 확장자</div>
+        <div class="custom-input-area">
+          <input
+            type="text"
+            id="customExtensionInput"
+            placeholder="확장자 입력"
+            maxlength="20"
+          />
+          <button class="add-button" onclick="addCustomExtension()">
+            +추가
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. 커스텀 확장자 표시 -->
+      <div class="section">
+        <div class="section-title">
+          <span id="extensionCount" th:text="${#lists.size(custom)} + '/200'"
+            >0/200</span
+          >
+        </div>
+        <div class="custom-extensions-display">
+          <div class="extension-tags" id="extensionTags">
+            <div class="extension-tag" th:each="item : ${custom}">
+              <span class="name" th:text="${item.extensionName}"></span>
+              <span
+                class="remove-btn"
+                onclick="removeExtension(this)"
+                th:data-name="${item.extensionName}"
+                >✕</span
+              >
+            </div>
+            <div th:if="${#lists.isEmpty(custom)}" class="empty-message">
+              등록된 커스텀 확장자가 없습니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 페이지 로드 완료 후 이벤트 등록
+      document.addEventListener("DOMContentLoaded", function () {
+        // 고정 확장자 체크박스 변경 이벤트
+        document
+          .querySelectorAll('input[name="fixedExtension"]')
+          .forEach((checkbox) => {
+            checkbox.addEventListener("change", function () {
+              const seqno = this.dataset.seqno;
+              updateFixedExtension(seqno, this.value, this.checked);
             });
+          });
+      });
 
-            // 고정 확장자 체크박스 변경 이벤트
-            document.querySelectorAll('input[name="fixedExtension"]').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    updateFixedExtension(this.value, this.checked);
-                });
-            });
+      // 고정 확장자 상태 업데이트
+      function updateFixedExtension(seqno, extensionName, isBlocked) {
+        const requestBody = {
+          seqno: Number(seqno),
+          extensionName: extensionName,
+          isBlocked: isBlocked,
+        };
 
-            // 고정 확장자 상태 불러오기
-            function loadFixedExtensions() {
-                // TODO: API 호출하여 고정 확장자 상태 불러오기
-                console.log('고정 확장자 상태 불러오기');
+        fetch("/api/update/fix", createRequestEntity("POST", requestBody))
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("고정 확장자 상태 업데이트 실패");
             }
+            return response.json();
+          })
+          .catch((error) => {
+            alert("고정 확장자 상태 업데이트 중 오류가 발생했습니다.");
+          });
+      }
 
-            // 고정 확장자 상태 업데이트
-            function updateFixedExtension(extensionName, isBlocked) {
-                // TODO: API 호출하여 고정 확장자 상태 업데이트
-                console.log(`고정 확장자 업데이트: ${extensionName} = ${isBlocked}`);
+      // 커스텀 확장자 추가
+      function addCustomExtension() {
+        const input = document.getElementById("customExtensionInput");
+        const extensionName = input.value.trim();
+
+        if (!extensionName) {
+          alert("확장자를 입력해주세요.");
+          return;
+        }
+
+        if (extensionName.length > 20) {
+          alert("확장자는 최대 20자까지 입력 가능합니다.");
+          return;
+        }
+
+        const currentTags = document.querySelectorAll(".extension-tag");
+
+        // 200개 제한 체크
+        if (currentTags.length >= 200) {
+          alert("커스텀 확장자는 최대 200개까지 등록 가능합니다.");
+          return;
+        }
+
+        // 중복 체크 (대소문자 구분 없이)
+        const existingExtensions = Array.from(currentTags).map((tag) =>
+          tag.querySelector(".name").textContent.toLowerCase()
+        );
+        if (existingExtensions.includes(extensionName.toLowerCase())) {
+          alert("이미 등록된 확장자입니다.");
+          return;
+        }
+
+        // API 호출하여 커스텀 확장자 추가
+        const requestBody = {
+          extensionName: extensionName.toLowerCase(),
+          isBlocked: true,
+        };
+
+        fetch("/api/insert/custom", createRequestEntity("POST", requestBody))
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("커스텀 확장자 추가 실패");
             }
+            return response.json();
+          })
+          .then((data) => {
+            // 성공 시 화면에 추가
+            addExtensionTag(extensionName.toLowerCase());
+            input.value = "";
+            updateExtensionCount();
+          })
+          .catch((error) => {
+            alert("커스텀 확장자 추가 중 오류가 발생했습니다.");
+          });
+      }
 
-            // 커스텀 확장자 불러오기
-            function loadCustomExtensions() {
-                // TODO: API 호출하여 커스텀 확장자 목록 불러오기
-                console.log('커스텀 확장자 목록 불러오기');
-                updateExtensionCount();
-            }
+      // 확장자 태그 화면에 추가
+      function addExtensionTag(extensionName) {
+        const tagsContainer = document.getElementById("extensionTags");
 
-            // 커스텀 확장자 추가
-            function addCustomExtension() {
-                const input = document.getElementById('customExtensionInput');
-                const extensionName = input.value.trim();
+        // 빈 메시지 제거
+        const emptyMessage = tagsContainer.querySelector(".empty-message");
+        if (emptyMessage) {
+          emptyMessage.remove();
+        }
 
-                if (!extensionName) {
-                    alert('확장자를 입력해주세요.');
-                    return;
-                }
-
-                if (extensionName.length > 20) {
-                    alert('확장자는 최대 20자까지 입력 가능합니다.');
-                    return;
-                }
-
-                // TODO: 중복 체크 및 200개 제한 체크
-
-                // TODO: API 호출하여 커스텀 확장자 추가
-                console.log(`커스텀 확장자 추가: ${extensionName}`);
-
-                // 임시로 화면에 추가
-                addExtensionTag(extensionName);
-                input.value = '';
-                updateExtensionCount();
-            }
-
-            // 확장자 태그 화면에 추가
-            function addExtensionTag(extensionName) {
-                const tagsContainer = document.getElementById('extensionTags');
-                const tag = document.createElement('div');
-                tag.className = 'extension-tag';
-                tag.innerHTML = `
+        const tag = document.createElement("div");
+        tag.className = "extension-tag";
+        tag.innerHTML = `
                     <span class="name">${extensionName}</span>
                     <span class="remove-btn" onclick="removeExtension(this)">✕</span>
                 `;
-                tagsContainer.appendChild(tag);
-            }
+        tagsContainer.appendChild(tag);
+      }
 
-            // 확장자 삭제
-            function removeExtension(element) {
-                const tag = element.parentElement;
-                const extensionName = tag.querySelector('.name').textContent;
+      // 확장자 삭제
+      function removeExtension(element) {
+        const tag = element.parentElement;
+        const extensionName = tag.querySelector(".name").textContent;
 
-                if (confirm(`'${extensionName}' 확장자를 삭제하시겠습니까?`)) {
-                    // TODO: API 호출하여 커스텀 확장자 삭제
-                    console.log(`커스텀 확장자 삭제: ${extensionName}`);
+        if (confirm(`'${extensionName}' 확장자를 삭제하시겠습니까?`)) {
+          // API 호출하여 커스텀 확장자 삭제
+          const requestBody = {
+            extensionName: extensionName,
+            isBlocked: false,
+          };
 
-                    tag.remove();
-                    updateExtensionCount();
-                }
-            }
-
-            // 확장자 개수 업데이트
-            function updateExtensionCount() {
-                const tags = document.querySelectorAll('.extension-tag');
-                const count = tags.length;
-                document.getElementById('extensionCount').textContent = `${count}/200`;
-            }
-
-            // Enter 키로 추가
-            document.getElementById('customExtensionInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addCustomExtension();
-                }
+          fetch("/api/del/custom", createRequestEntity("POST", requestBody))
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("커스텀 확장자 삭제 실패");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              // 성공 시 화면에서 제거
+              tag.remove();
+              updateExtensionCount();
+            })
+            .catch((error) => {
+              alert("커스텀 확장자 삭제 중 오류가 발생했습니다.");
             });
-        </script>
-    </body>
+        }
+      }
+
+      // 확장자 개수 업데이트
+      function updateExtensionCount() {
+        const tagsContainer = document.getElementById("extensionTags");
+        const tags = document.querySelectorAll(".extension-tag");
+        const count = tags.length;
+        document.getElementById("extensionCount").textContent = `${count}/200`;
+
+        // 태그가 없으면 빈 메시지 표시
+        if (count === 0 && !tagsContainer.querySelector(".empty-message")) {
+          const emptyMessage = document.createElement("div");
+          emptyMessage.className = "empty-message";
+          emptyMessage.textContent = "등록된 커스텀 확장자가 없습니다.";
+          tagsContainer.appendChild(emptyMessage);
+        }
+      }
+
+      // Request 요청 객체 생성
+      function createRequestEntity(method, body) {
+        return {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        };
+      }
+
+      // Enter 키로 추가
+      document
+        .getElementById("customExtensionInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            addCustomExtension();
+          }
+        });
+    </script>
+  </body>
 </html>
