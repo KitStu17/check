@@ -173,12 +173,21 @@
           emptyMessage.remove();
         }
 
+        // XSS 방지: innerHTML 대신 DOM API 사용
         const tag = document.createElement("div");
         tag.className = "extension-tag";
-        tag.innerHTML = `
-                    <span class="name">${extensionName}</span>
-                    <span class="remove-btn" onclick="removeExtension(this)">✕</span>
-                `;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "name";
+        nameSpan.textContent = extensionName; // textContent는 자동 이스케이프
+
+        const removeBtn = document.createElement("span");
+        removeBtn.className = "remove-btn";
+        removeBtn.textContent = "✕";
+        removeBtn.onclick = function() { removeExtension(this); };
+
+        tag.appendChild(nameSpan);
+        tag.appendChild(removeBtn);
         tagsContainer.appendChild(tag);
       }
 

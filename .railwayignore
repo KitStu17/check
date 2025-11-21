@@ -1,0 +1,9 @@
+# Railway 배포 시 제외할 파일/디렉토리
+.git
+.gradle
+build/
+.idea
+*.iml
+.vscode
+*.log
+src/main/resources/config/local/
