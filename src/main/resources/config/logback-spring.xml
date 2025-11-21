@@ -2,8 +2,9 @@
 <configuration>
     <springProperty name="PROFILE" source="spring.profiles.active" defaultValue="local"/>
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %magenta([%thread]) %highlight([%-3level]) %boldRed(%logger{5}) - %msg %n" />
-    <property name="BACKUP_LOG_FILE" value="server-%d{yyyyMMdd}.log"/>
     <property name="FILE_PATH" value="log_data"/>
+    <property name="BACKUP_LOG_FILE" value="server-%d{yyyyMMdd}.log"/>
+    <property name="LOG_FILE" value="web.log"/>
     <property name="BACKUP_SCHEDULE_FILE" value="schduler-%d{yyyyMMdd}.log"/>
     <property name="SCHEDULE_FILE" value="scheduler.log"/>
 
