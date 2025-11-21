@@ -130,12 +130,22 @@
           return;
         }
 
-        // 중복 체크 (대소문자 구분 없이)
+        // 고정 확장자와 중복 체크 (대소문자 구분 없이)
+        const fixedExtensions = Array.from(
+          document.querySelectorAll('input[name="fixedExtension"]')
+        ).map((checkbox) => checkbox.value.toLowerCase());
+
+        if (fixedExtensions.includes(extensionName.toLowerCase())) {
+          alert("고정 확장자로 이미 등록되어 있습니다.");
+          return;
+        }
+
+        // 커스텀 확장자와 중복 체크 (대소문자 구분 없이)
         const existingExtensions = Array.from(currentTags).map((tag) =>
           tag.querySelector(".name").textContent.toLowerCase()
         );
         if (existingExtensions.includes(extensionName.toLowerCase())) {
-          alert("이미 등록된 확장자입니다.");
+          alert("이미 등록된 커스텀 확장자입니다.");
           return;
         }
 
